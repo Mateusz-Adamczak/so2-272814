@@ -25,7 +25,6 @@ private:
     Mutex lock;
     std::vector<bool> forks;
     std::queue<int> queue;
-    int currentPhilosopher = -1;
 
 public:
     Waiter(int numForks) : forks(numForks, true) {}
@@ -41,7 +40,6 @@ public:
         queue.pop();
         forks[forkLeft] = false;
         forks[forkRight] = false;
-        currentPhilosopher = id;
         std::cout<<"Philosopher "<<id<<" takes forks "
             <<forkLeft<<" and "<<forkRight<<std::endl;
         lock.unlock();
@@ -51,7 +49,6 @@ public:
         lock.lock();
         forks[forkLeft] = true;
         forks[forkRight] = true;
-        currentPhilosopher = -1;
         std::cout<<"Philosopher "<<id<<" returns forks "
             <<forkLeft<<" and "<<forkRight<<std::endl;
         lock.unlock();
