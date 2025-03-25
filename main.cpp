@@ -65,8 +65,6 @@ public:
     Philosopher(int _id, int _forkLeft, int _forkRight, Waiter& _waiter, volatile bool& _running) : id(_id), forkLeft(_forkLeft), forkRight(_forkRight), waiter(_waiter), running(_running) {}
     
     void dine() {
-        //std::cout<<"TEMP: philosopher "<<id<<" created."<<std::endl;
-        //std::cout<<"id: "<<id<<", left fork: "<<forkLeft<<", right fork: "<<forkRight<<std::endl;
         while (running) {
             think();
             waiter.requestAccess(id, forkLeft, forkRight);
