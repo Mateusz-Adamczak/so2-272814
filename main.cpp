@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include <chrono>
+#include <queue>
 
 class Mutex {
 private:
@@ -23,30 +24,34 @@ class Waiter {
 private:
     Mutex lock;
     std::vector<bool> forks;
+    std::queue<int> queue;
+    int currentPhilosopher = -1;
 
 public:
     Waiter(int numForks) : forks(numForks, true) {}
     
     void requestAccess(int id, int forkLeft, int forkRight) {
-        while (true) {
-            lock.lock();
-            if (forks[forkLeft] && forks[forkRight]) {
-                forks[forkLeft] = false;
-                forks[forkRight] = false;
-                std::cout<<"Philosopher "<<id<<" takes forks "
-                    <<forkLeft<<" and "<<forkRight<<std::endl;
-                lock.unlock();
-                return;
-            }
+        lock.lock();
+        queue.push(id);
+        while (queue.front() != id || !forks[forkLeft] || !forks[forkRight]) {
             lock.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            lock.lock();
         }
+        queue.pop();
+        forks[forkLeft] = false;
+        forks[forkRight] = false;
+        currentPhilosopher = id;
+        std::cout<<"Philosopher "<<id<<" takes forks "
+            <<forkLeft<<" and "<<forkRight<<std::endl;
+        lock.unlock();
     }
     
     void releaseAccess(int id, int forkLeft, int forkRight) {
         lock.lock();
         forks[forkLeft] = true;
         forks[forkRight] = true;
+        currentPhilosopher = -1;
         std::cout<<"Philosopher "<<id<<" returns forks "
             <<forkLeft<<" and "<<forkRight<<std::endl;
         lock.unlock();
