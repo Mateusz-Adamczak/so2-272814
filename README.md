@@ -16,7 +16,7 @@ Spośród kilku rozwiązań ten program posiada implementację rozwiązania zak�
 
 Plik Makefile zawiera zautomatyzowane polecenie kompilacji pliku main.cpp w systemie operacyjnym Linux:
 
-g++ -pthread main.cpp -o dining
+g++ -std=c++11 -pthread main.cpp -o dining
 
 Można go uruchomić poprzez wywołanie w terminalu polecenia "make" w katalogu, w którym znajduje się plik main.cpp.
 
