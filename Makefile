@@ -1,2 +1,2 @@
 all:
-	g++ -pthread main.cpp -o dining
+	g++ -std=c++11 -pthread main.cpp -o dining
