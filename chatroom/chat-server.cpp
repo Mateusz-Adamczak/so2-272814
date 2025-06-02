@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <cstring>
+#include <algorithm>
 
 #define PORT 12345
 
@@ -27,6 +29,39 @@ public:
 Mutex clients_mutex;
 std::vector<int> clients;
 
+void broadcastMessage(const std::string& msg, int sender_id) {
+    clients_mutex.lock();
+    
+    for (int client_fd : clients) {
+        if (client_fd != sender_id) {
+            send(client_fd, msg.c_str(), msg.size(), 0);
+        }
+    }
+    
+    clients_mutex.unlock();
+}
+
+void handleClient(int client_fd) {
+    char buffer[1024];
+    
+    while (true) {
+        memset(buffer, 0, sizeof(buffer));
+        int bytesRead = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+        if (bytesRead <= 0) {
+            std::cout<<"A client disconnected.\n";
+            break;
+        }
+        std::string msg(buffer);
+        std::cout<<"Received message: "<<msg;
+        broadcastMessage(msg, client_fd);
+    }
+    
+    close(client_fd);
+    clients_mutex.lock();
+    clients.erase(std::remove(clients.begin(), clients.end(), client_fd), clients.end());
+    clients_mutex.unlock();
+}
+
 int main() {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in address{};
@@ -47,6 +82,7 @@ int main() {
         clients.push_back(client_fd);
         clients_mutex.unlock();
         
+        std::thread(handleClient, client_fd).detach();
         std::cout<<"New client connected.\n";
     }
 
