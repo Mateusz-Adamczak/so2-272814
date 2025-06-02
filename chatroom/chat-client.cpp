@@ -3,12 +3,22 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <cstring>
 
 #define PORT 12345
 
 
 void receiveMessages(int socket_fd) {
-    std::cout<<"(Message receiver placeholder)\n";
+    char buffer[1024];
+    while (true) {
+        memset(buffer, 0, sizeof(buffer));
+        int bytesRead = recv(socket_fd, buffer, sizeof(buffer) - 1, 0);
+        if (bytesRead <= 0) {
+            std::cout<<"Disconnected from chat server.\n";
+            break;
+        }
+        std::cout<<buffer;
+    }
 }
 
 int main() {
@@ -34,15 +44,15 @@ int main() {
     
     std::string msg;
     while (true) {
-        std::cout<<"[" + nickname + "] ";
-        std::cin>>msg;
+        std::getline(std::cin, msg);
         
         if (msg=="/exit") {
+            std::cout<<"test";
             break;
         }
         
         msg = "[" + nickname + "] " + msg + "\n";
-        std::cout<<msg; // temp
+        send(socket_fd, msg.c_str(), msg.size(), 0);
     }
     
     close(socket_fd);
